@@ -1,8 +1,7 @@
 from flask_restful import HTTPException, http_status_message
 
 
-
-class APIExceptions:
+class APIExceptions(HTTPException):
     pass
 
 

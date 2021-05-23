@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse, HTTPException
-from services.Exceptions.Exceptions import api_exceptions
+from Exceptions.Exceptions import api_exceptions
 
 videos = {}
 video_put_args = reqparse.RequestParser()
