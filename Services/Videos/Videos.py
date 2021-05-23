@@ -1,5 +1,6 @@
-from flask_restful import Resource, reqparse, HTTPException
-from Exceptions.Exceptions import api_exceptions
+from flask_restful import Resource, reqparse, fields, marshal_with
+
+from Services.Videos.Models.Videos import VideosModel
 
 videos = {}
 video_put_args = reqparse.RequestParser()
@@ -16,16 +17,20 @@ video_put_args.add_argument(
     "views", type=int, help="number of views on video", required=True
 )
 
-
-class VideosExceptions(HTTPException):
-    pass
+resource_fields = {
+    'id': fields.Integer,
+    "name": fields.String,
+    "views": fields.Integer,
+    "likes": fields.Integer
+}
 
 
 class Videos(Resource):
+
+    @marshal_with(resource_fields)
     def get(self, video_id):
-        if video_id not in videos:
-            return api_exceptions[404]
-        return videos[video_id]
+        result = VideosModel.query.get(id=video_id)
+        return result
 
     def put(self, video_id):
         args = video_put_args.parse_args()
