@@ -1,11 +1,13 @@
+import logging
 from flask_restful import Resource, reqparse, fields, marshal_with
 
 from Services.Videos.Models.Videos import VideoModel
 
-from Tasks.tasks import tasks
+from Tasks.tasks import celery
 
 from Services.db import db
 
+logger = logging.getLogger('video_resource')
 video_put_args = reqparse.RequestParser()
 video_put_args.add_argument(
     "name", type=str, help="name of the video", required=True
@@ -59,7 +61,7 @@ class VideosResource(Resource):
         video = VideoModel(name=name, likes=likes, views=views)
         # db.session.add(video)
         # db.session.commit()
-        video_insert.delay(db.session, video)
+        video_insert.delay(video)
         return {}
 
     @marshal_with(resource_fields)
@@ -67,9 +69,9 @@ class VideosResource(Resource):
         return VideoModel.query.all()
 
 
-@tasks.task(name="tasks.api.video.insert")
-def video_insert(session, video):
-    print(video)
-    print(dir(session))
-    session.add(video)
-    session.commit()
+@celery.task(name="celery.video_insert", serializer='json')
+def video_insert(video: VideoModel):
+    logger.info(video)
+    db.session.add(video)
+    db.session.commit()
+
